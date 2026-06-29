@@ -17,11 +17,11 @@ brackets using probabilistic modelling.
 
 ## Tech Stack
 
-- **Scraping** — Python, BeautifulSoup, requests
-- **Database** — PostgreSQL
-- **Backend** — FastAPI
-- **ML/Modelling** — scikit-learn, UMAP, custom Glicko-2 implementation
-- **Frontend** — React
+- **Scraping**: Python, BeautifulSoup, requests
+- **Database**: PostgreSQL
+- **Backend**: FastAPI
+- **ML/Modelling**: scikit-learn, UMAP, custom Glicko-2 implementation
+- **Frontend**: React
 
 ## Status
 
