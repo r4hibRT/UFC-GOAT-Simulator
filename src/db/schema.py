@@ -1,0 +1,58 @@
+from src.db.connection import get_connection
+
+def create_tables():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS fighters (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(100) NOT NULL,
+            dob DATE,
+            height NUMERIC(5,2),
+            reach NUMERIC(5,2),
+            weight_class VARCHAR(50),
+            stance VARCHAR(20)
+        );
+    """)
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS bouts (
+            id SERIAL PRIMARY KEY,
+            date DATE,
+            fighter_a_id INTEGER REFERENCES fighters(id),
+            fighter_b_id INTEGER REFERENCES fighters(id),
+            winner_id INTEGER REFERENCES fighters(id),
+            method VARCHAR(20),
+            method_detail VARCHAR(100),
+            round INTEGER,
+            time VARCHAR(10),
+            is_title_fight BOOLEAN DEFAULT FALSE,
+            is_defence BOOLEAN DEFAULT FALSE
+        );
+    """)
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS bout_stats (
+            id SERIAL PRIMARY KEY,
+            bout_id INTEGER REFERENCES bouts(id),
+            fighter_id INTEGER REFERENCES fighters(id),
+            sig_strikes_landed INTEGER,
+            sig_strikes_attempted INTEGER,
+            total_strikes_landed INTEGER,
+            total_strikes_attempted INTEGER,
+            takedowns_landed INTEGER,
+            takedowns_attempted INTEGER,
+            submission_attempts INTEGER,
+            knockdowns INTEGER,
+            control_time_seconds INTEGER
+        );
+    """)
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    print("Tables created successfully")
+
+if __name__ == "__main__":
+    create_tables()
