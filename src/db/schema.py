@@ -4,9 +4,14 @@ def create_tables():
     conn = get_connection()
     cur = conn.cursor()
 
+    cur.execute("DROP TABLE IF EXISTS bout_stats;")
+    cur.execute("DROP TABLE IF EXISTS bouts;")
+    cur.execute("DROP TABLE IF EXISTS fighters;")
+
     cur.execute("""
         CREATE TABLE IF NOT EXISTS fighters (
             id SERIAL PRIMARY KEY,
+            url VARCHAR(200) UNIQUE,
             name VARCHAR(100) NOT NULL,
             dob DATE,
             height NUMERIC(5,2),
