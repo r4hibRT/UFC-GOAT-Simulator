@@ -1,15 +1,15 @@
 from src.db.connection import get_connection
 
-def insert_fighter(url, name, dob=None, height=None, reach=None, weight_class=None, stance=None):
+def insert_fighter(url, name, dob=None, height=None, reach=None, stance=None):
     conn = get_connection()
     cur = conn.cursor()
 
     cur.execute("""
-        INSERT INTO fighters (url, name, dob, height, reach, weight_class, stance)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO fighters (url, name, dob, height, reach, stance)
+        VALUES (%s, %s, %s, %s, %s, %s)
         ON CONFLICT (url) DO NOTHING
         RETURNING id;
-    """, (url, name, dob, height, reach, weight_class, stance))
+    """, (url, name, dob, height, reach, stance))
 
     row = cur.fetchone()
 
@@ -22,26 +22,24 @@ def insert_fighter(url, name, dob=None, height=None, reach=None, weight_class=No
     conn.close()
     return row[0]
 
-
 def insert_bout(date, fighter_a_id, fighter_b_id, winner_id, method, method_detail,
-                round_, time, is_title_fight, is_defence):
+                round_, time, weight_class, is_title_fight, is_defence):
     conn = get_connection()
     cur = conn.cursor()
 
     cur.execute("""
         INSERT INTO bouts (date, fighter_a_id, fighter_b_id, winner_id, method, method_detail,
-                           round, time, is_title_fight, is_defence)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                           round, time, weight_class, is_title_fight, is_defence)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         RETURNING id;
     """, (date, fighter_a_id, fighter_b_id, winner_id, method, method_detail,
-          round_, time, is_title_fight, is_defence))
+          round_, time, weight_class, is_title_fight, is_defence))
 
     bout_id = cur.fetchone()[0]
     conn.commit()
     cur.close()
     conn.close()
     return bout_id
-
 
 def insert_bout_stats(bout_id, fighter_id, stats):
     conn = get_connection()
@@ -69,3 +67,12 @@ def insert_bout_stats(bout_id, fighter_id, stats):
     conn.commit()
     cur.close()
     conn.close()
+
+def fighter_exists(url):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM fighters WHERE url = %s;", (url,))
+    row = cur.fetchone()
+    cur.close()
+    conn.close()
+    return row[0] if row else None

@@ -1,17 +1,11 @@
-from playwright.sync_api import sync_playwright
+
 from bs4 import BeautifulSoup
 
 TEST_EVENT_URL = "http://www.ufcstats.com/event-details/f354c50b8d63d9b3"
 
-def scrape_bout_urls(event_url):
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
-        page.goto(event_url, wait_until="networkidle")
-
-        html = page.content()
-        browser.close()
-
+def scrape_bout_urls(event_url, page):
+    page.goto(event_url, wait_until="networkidle")
+    html = page.content()
     soup = BeautifulSoup(html, "html.parser")
     rows = soup.select("tr.b-fight-details__table-row")
 
@@ -22,15 +16,9 @@ def scrape_bout_urls(event_url):
             bout_urls.append(link)
 
     return bout_urls
-def scrape_bout_details(bout_url):
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
-        page.goto(bout_url, wait_until="networkidle")
-
-        html = page.content()
-        browser.close()
-
+def scrape_bout_details(bout_url, page):
+    page.goto(bout_url, wait_until="networkidle")
+    html = page.content()
     soup = BeautifulSoup(html, "html.parser")
 
     # Fighter names and URLs
@@ -62,15 +50,28 @@ def scrape_bout_details(bout_url):
         bout_text = bout_type.get_text(strip=True).lower()
         is_title_fight = "title" in bout_text
 
+    # Method detail
+    method_parts = method.split(" - ")
+    method_type = method_parts[0].strip()
+    method_detail = method_parts[1].strip() if len(method_parts) > 1 else None
+
+    # Weight class
+    weight_class = None
+    if bout_type:
+        bout_text_raw = bout_type.get_text(strip=True)
+        weight_class = bout_text_raw.replace("UFC", "").replace("Title Bout", "").replace("Bout", "").strip()
+
     return {
         "fighter_a_name": fighter_a_name,
         "fighter_a_url": fighter_a_url,
         "fighter_b_name": fighter_b_name,
         "fighter_b_url": fighter_b_url,
         "winner": winner,
-        "method": method,
+        "method": method_type,
+        "method_detail": method_detail,
         "round": round_,
         "time": time,
+        "weight_class": weight_class,
         "is_title_fight": is_title_fight,
         "is_defence": False,
         "soup": soup

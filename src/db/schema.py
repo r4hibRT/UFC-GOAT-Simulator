@@ -16,26 +16,26 @@ def create_tables():
             dob DATE,
             height NUMERIC(5,2),
             reach NUMERIC(5,2),
-            weight_class VARCHAR(50),
             stance VARCHAR(20)
         );
     """)
 
     cur.execute("""
-        CREATE TABLE IF NOT EXISTS bouts (
-            id SERIAL PRIMARY KEY,
-            date DATE,
-            fighter_a_id INTEGER REFERENCES fighters(id),
-            fighter_b_id INTEGER REFERENCES fighters(id),
-            winner_id INTEGER REFERENCES fighters(id),
-            method VARCHAR(20),
-            method_detail VARCHAR(100),
-            round INTEGER,
-            time VARCHAR(10),
-            is_title_fight BOOLEAN DEFAULT FALSE,
-            is_defence BOOLEAN DEFAULT FALSE
-        );
-    """)
+            CREATE TABLE IF NOT EXISTS bouts (
+                id SERIAL PRIMARY KEY,
+                date DATE,
+                fighter_a_id INTEGER REFERENCES fighters(id),
+                fighter_b_id INTEGER REFERENCES fighters(id),
+                winner_id INTEGER REFERENCES fighters(id),
+                method VARCHAR(20),
+                method_detail VARCHAR(100),
+                round INTEGER,
+                time VARCHAR(10),
+                weight_class VARCHAR(50),
+                is_title_fight BOOLEAN DEFAULT FALSE,
+                is_defence BOOLEAN DEFAULT FALSE
+            );
+        """)
 
     cur.execute("""
         CREATE TABLE IF NOT EXISTS bout_stats (

@@ -3,15 +3,9 @@ from bs4 import BeautifulSoup
 
 EVENTS_URL = "http://www.ufcstats.com/statistics/events/completed?page=all"
 
-def scrape_events():
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
-        page.goto(EVENTS_URL, wait_until="networkidle")
-
-        html = page.content()
-        browser.close()
-
+def scrape_events(page):
+    page.goto(EVENTS_URL, wait_until="networkidle")
+    html = page.content()
     soup = BeautifulSoup(html, "html.parser")
     rows = soup.select("tr.b-statistics__table-row")
 
