@@ -11,19 +11,37 @@ def parse_date(date_str):
         return datetime.strptime(date_str.strip(), "%B %d, %Y").date()
     except:
         return None
+PROGRESS_LOG = "progress.log"
+
+def load_progress():
+    try:
+        with open(PROGRESS_LOG, "r") as f:
+            return set(line.strip() for line in f.readlines())
+    except FileNotFoundError:
+        return set()
+
+def log_progress(event_url):
+    with open(PROGRESS_LOG, "a") as f:
+        f.write(event_url + "\n")
 
 
 def run_pipeline(events, page):
+    completed = load_progress()
+
     for event in events:
+        if event["url"] in completed:
+            print(f"Skipping (already done): {event['name']}")
+            continue
+
         print(f"Processing event: {event['name']} ({event['date']})")
         event_date = parse_date(event["date"])
         bout_urls = scrape_bout_urls(event["url"], page)
-
+        success = 0
+        failed = 0
         for bout_url in bout_urls:
             try:
                 details = scrape_bout_details(bout_url, page)
 
-                # Fighter A: skip profile scrape if already in db
                 fighter_a_id = fighter_exists(details["fighter_a_url"])
                 if fighter_a_id is None:
                     profile_a = scrape_fighter_profile(details["fighter_a_url"], page)
@@ -36,7 +54,6 @@ def run_pipeline(events, page):
                         stance=profile_a["stance"]
                     )
 
-                # Fighter B — skip profile scrape if already in db
                 fighter_b_id = fighter_exists(details["fighter_b_url"])
                 if fighter_b_id is None:
                     profile_b = scrape_fighter_profile(details["fighter_b_url"], page)
@@ -49,10 +66,8 @@ def run_pipeline(events, page):
                         stance=profile_b["stance"]
                     )
 
-                # Resolve winner ID
                 winner_id = fighter_a_id if details["winner"] == details["fighter_a_name"] else fighter_b_id
 
-                # Insert bout
                 bout_id = insert_bout(
                     date=event_date,
                     fighter_a_id=fighter_a_id,
@@ -67,7 +82,6 @@ def run_pipeline(events, page):
                     is_defence=details["is_defence"]
                 )
 
-                # Scrape and insert stats
                 stats = scrape_bout_stats(
                     details["soup"],
                     details["fighter_a_url"],
@@ -79,13 +93,20 @@ def run_pipeline(events, page):
                     insert_bout_stats(bout_id, fighter_b_id, stats[1])
 
                 print(f"  ✓ {details['fighter_a_name']} vs {details['fighter_b_name']}")
+                success += 1
 
             except Exception as e:
                 print(f"  ✗ Failed {bout_url}: {e}")
+                failed += 1
                 import traceback
                 traceback.print_exc()
                 continue
 
+        print(f"  → {success} succeeded, {failed} failed")
+        if success > 0:
+            log_progress(event["url"])
+        else:
+            print(f"  ⚠ No bouts scraped — will retry on next run")
 
 if __name__ == "__main__":
     with sync_playwright() as p:
@@ -94,6 +115,6 @@ if __name__ == "__main__":
 
         events = scrape_events(page)
         events = list(reversed(events))
-        run_pipeline(events[:1], page)
+        run_pipeline(events, page)
 
         browser.close()

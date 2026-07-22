@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 TEST_EVENT_URL = "http://www.ufcstats.com/event-details/f354c50b8d63d9b3"
 
 def scrape_bout_urls(event_url, page):
-    page.goto(event_url, wait_until="networkidle")
+    page.goto(event_url, wait_until="networkidle", timeout=60000)
     html = page.content()
     soup = BeautifulSoup(html, "html.parser")
     rows = soup.select("tr.b-fight-details__table-row")
@@ -17,7 +17,7 @@ def scrape_bout_urls(event_url, page):
 
     return bout_urls
 def scrape_bout_details(bout_url, page):
-    page.goto(bout_url, wait_until="networkidle")
+    page.goto(bout_url, wait_until="networkidle", timeout=60000)
     html = page.content()
     soup = BeautifulSoup(html, "html.parser")
 

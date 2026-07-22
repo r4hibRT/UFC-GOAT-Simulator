@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 
 def scrape_fighter_profile(fighter_url, page):
-    page.goto(fighter_url, wait_until="networkidle")
+    page.goto(fighter_url, wait_until="networkidle", timeout=60000)
     html = page.content()
     soup = BeautifulSoup(html, "html.parser")
 

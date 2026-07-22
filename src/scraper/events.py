@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 EVENTS_URL = "http://www.ufcstats.com/statistics/events/completed?page=all"
 
 def scrape_events(page):
-    page.goto(EVENTS_URL, wait_until="networkidle")
+    page.goto(EVENTS_URL, wait_until="networkidle", timeout=60000)
     html = page.content()
     soup = BeautifulSoup(html, "html.parser")
     rows = soup.select("tr.b-statistics__table-row")
