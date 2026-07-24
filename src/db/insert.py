@@ -31,15 +31,23 @@ def insert_bout(date, fighter_a_id, fighter_b_id, winner_id, method, method_deta
         INSERT INTO bouts (date, fighter_a_id, fighter_b_id, winner_id, method, method_detail,
                            round, time, weight_class, is_title_fight, is_defence)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        ON CONFLICT (date, fighter_a_id, fighter_b_id) DO NOTHING
         RETURNING id;
     """, (date, fighter_a_id, fighter_b_id, winner_id, method, method_detail,
           round_, time, weight_class, is_title_fight, is_defence))
 
-    bout_id = cur.fetchone()[0]
+    row = cur.fetchone()
+    if row is None:
+        cur.execute("SELECT id FROM bouts WHERE date = %s AND fighter_a_id = %s AND fighter_b_id = %s;",
+                    (date, fighter_a_id, fighter_b_id))
+        row = cur.fetchone()
+
+    bout_id = row[0]
     conn.commit()
     cur.close()
     conn.close()
     return bout_id
+
 
 def insert_bout_stats(bout_id, fighter_id, stats):
     conn = get_connection()
@@ -49,7 +57,8 @@ def insert_bout_stats(bout_id, fighter_id, stats):
         INSERT INTO bout_stats (bout_id, fighter_id, sig_strikes_landed, sig_strikes_attempted,
                                 total_strikes_landed, total_strikes_attempted, takedowns_landed,
                                 takedowns_attempted, submission_attempts, knockdowns, control_time_seconds)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        ON CONFLICT (bout_id, fighter_id) DO NOTHING;
     """, (
         bout_id,
         fighter_id,
