@@ -85,3 +85,17 @@ def fighter_exists(url):
     cur.close()
     conn.close()
     return row[0] if row else None
+
+def insert_rating(fighter_id, bout_id, date, rating, rd, volatility, expected_score):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        INSERT INTO ratings (fighter_id, bout_id, date, rating, rd, volatility, expected_score)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        ON CONFLICT (fighter_id, bout_id) DO NOTHING;
+    """, (fighter_id, bout_id, date, rating, rd, volatility, expected_score))
+
+    conn.commit()
+    cur.close()
+    conn.close()

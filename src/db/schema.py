@@ -53,7 +53,19 @@ def create_tables():
             control_time_seconds INTEGER
         );
     """)
-
+    cur.execute("""
+            CREATE TABLE IF NOT EXISTS ratings (
+                id SERIAL PRIMARY KEY,
+                fighter_id INTEGER REFERENCES fighters(id),
+                bout_id INTEGER REFERENCES bouts(id),
+                date DATE,
+                rating NUMERIC(8,2),
+                rd NUMERIC(8,2),
+                volatility NUMERIC(8,6),
+                expected_score NUMERIC(6,4),
+                UNIQUE(fighter_id, bout_id)
+            );
+        """)
     conn.commit()
     cur.close()
     conn.close()
